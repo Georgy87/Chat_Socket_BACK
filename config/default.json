@@ -1,0 +1,5 @@
+{
+    "serverPort" : 5000,
+    "dbUrl" : "mongodb+srv://dbUser:1987toyuiui@cluster0.o2azr.mongodb.net/Chat?retryWrites=true&w=majority",
+    "secretKey": "mern-secret-key"
+}
