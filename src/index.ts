@@ -4,6 +4,8 @@ const app = express();
 const config = require("config");
 
 import { UserCtrl } from "./controllers/UserController";
+import { DialogCtrl } from './controllers/DialogController';
+
 import bodyParser from "body-parser";
 
 const PORT = config.get('serverPort');
@@ -23,6 +25,9 @@ app.listen(PORT, () => {
 app.get("/user/:id", UserCtrl.show);
 app.post("/user/registration", UserCtrl.create);
 app.delete("/user/:id", UserCtrl.delete);
+
+app.get("/dialogs", DialogCtrl.index);
+app.post("/dialogs", DialogCtrl.create);
 
 // app.get("/", function(req: any, res: any) {
 //     res.json({
