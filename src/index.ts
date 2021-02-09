@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const app = express();
 const config = require("config");
 
-import User from "./schemas/User";
+import { UserCtrl } from "./controllers/UserController";
 import bodyParser from "body-parser";
 
 const PORT = config.get('serverPort');
@@ -20,14 +20,18 @@ app.listen(PORT, () => {
     console.log(`App listening on port ${PORT}!`);
 });
 
-app.get("/", function(req: any, res: any) {
-    res.json({
-        data: "User created",
-    });
-    const user = new User({
-        email: "goshana87@mail.ru",
-        fullname: "Test user",
-        password: "1987toyuiui",
-    });
-    user.save().then((data) => console.log("Create user"));
-});
+app.get("/user/:id", UserCtrl.show);
+app.post("/user/registration", UserCtrl.create);
+app.delete("/user/:id", UserCtrl.delete);
+
+// app.get("/", function(req: any, res: any) {
+//     res.json({
+//         data: "User created",
+//     });
+//     const user = new User({
+//         email: "goshana87@mail.ru",
+//         fullname: "Test user",
+//         password: "1987toyuiui",
+//     });
+//     user.save().then((data) => console.log("Create user"));
+// });
