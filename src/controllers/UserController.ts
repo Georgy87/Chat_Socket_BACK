@@ -28,27 +28,7 @@ class UserController {
                 res.json(reason);
             });
     }
-    // delete = (req: express.Request, res: express.Response): void => {
-    //     const id: string = req.params.id;
-    //     UserModel.findOneAndRemove({ _id: id })
-    //         .then((user: IUser | null) => {
-    //             if (user) {
-    //                 res.json({
-    //                     message: `User ${user.fullname} deleted`,
-    //                 });
-    //             } else {
-    //                 res.status(404).json({
-    //                     status: "error",
-    //                 });
-    //             }
-    //         })
-    //         .catch((err: any) => {
-    //             res.json({
-    //                 message: err,
-    //             });
-    //         });
-    // };
-    
+
     delete(req: express.Request, res: express.Response) {
         const id = req.params.id;
         UserModel.findOneAndRemove({ _id: id })
