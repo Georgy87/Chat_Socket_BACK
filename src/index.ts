@@ -7,6 +7,7 @@ import { UserCtrl } from "./controllers/UserController";
 import { DialogCtrl } from './controllers/DialogController';
 
 import bodyParser from "body-parser";
+import { MessageCtrl } from "./controllers/MessageController";
 
 const PORT = config.get('serverPort');
 
@@ -26,8 +27,13 @@ app.get("/user/:id", UserCtrl.show);
 app.post("/user/registration", UserCtrl.create);
 app.delete("/user/:id", UserCtrl.delete);
 
-app.get("/dialogs", DialogCtrl.index);
+app.get("/dialogs", DialogCtrl.show);
 app.post("/dialogs", DialogCtrl.create);
+app.delete("/dialogs", DialogCtrl.delete);
+
+app.get("/messages", MessageCtrl.show);
+app.post("/messages", MessageCtrl.create);
+app.delete("/messages", MessageCtrl.delete);
 
 // app.get("/", function(req: any, res: any) {
 //     res.json({

@@ -1,8 +1,9 @@
 import express from "express";
-import { DialogModel } from "../models/Dialog";
+import { DialogModel, IDialog } from "../models/Dialog";
+import MessageModel from "../models/Message";
 
 class DialogController {
-    index(req: express.Request, res: express.Response) {
+    show(req: express.Request, res: express.Response) {
         const authorId = "6022a0e1b8b6ee05597b9f1f";
         DialogModel.find({ author: authorId })
             .populate(["author", "partner"])
@@ -21,12 +22,47 @@ class DialogController {
             partner: req.body.partner,
         };
         const dialog = new DialogModel(postData);
-        dialog.save()
-            .then((obj: any) => {
-                res.json(obj);
+
+        dialog
+            .save()
+            .then((dialogObj: any) => {
+                const message = new MessageModel({
+                    text: req.body.text,
+                    user: req.body.author,
+                    dialog: dialogObj._id,
+                });
+
+                message
+                    .save()
+                    .then(() => {
+                        res.json(dialogObj);
+                    })
+                    .catch((reason) => {
+                        res.json(reason);
+                    });
             })
             .catch((reason) => {
                 res.json(reason);
+            });
+    }
+    delete(req: express.Request, res: express.Response) {
+        const id = req.params.id;
+        DialogModel.findOneAndRemove({ _id: id })
+            .then((dialog: IDialog | null) => {
+                if (dialog) {
+                    res.json({
+                        message: `Dialog deleted`,
+                    });
+                } else {
+                    res.status(404).json({
+                        status: "Dialog not found",
+                    });
+                }
+            })
+            .catch((err: any) => {
+                res.json({
+                    message: err,
+                });
             });
     }
 }
