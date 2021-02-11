@@ -38,7 +38,6 @@ class MessageController {
     }
     delete(req: express.Request, res: express.Response) {
         const id = req.query.id;
-        console.log('gee');
         MessageModel.findOneAndDelete({ _id: id })
             .then((message) => {
                 if (message) {
