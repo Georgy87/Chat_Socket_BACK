@@ -2,10 +2,11 @@ import express from "express";
 import { UserModel } from "../models";
 import { IUser } from "../models/User";
 import { validationResult } from "express-validator";
-import { createJWToken } from "../utils/createJWToken";
+import { default as createJWToken } from "../utils/createJWToken";
 import bcrypt from "bcrypt";
 class UserController {
     show(req: express.Request, res: express.Response) {
+        console.log("fuck");
         const id: string = req.params.id;
         UserModel.findById(id, (err: any, user: any) => {
             if (err) {
@@ -16,13 +17,27 @@ class UserController {
             res.json(user);
         });
     }
+
+    getMe(req: any, res: any) {
+        const id: string = req.user._id;
+        console.log(req.user);
+        UserModel.findById(id, (err: any, user: any) => {
+            if (err) {
+                return res.status(404).json({
+                    message: "User is not authorization",
+                });
+            }
+            res.json(user);
+        });
+    }
+
     async create(req: express.Request, res: express.Response) {
         const hashPassword = await bcrypt.hash(req.body.password, 8);
 
         const postData = {
             email: req.body.email,
             fullname: req.body.fullname,
-            password:  hashPassword,
+            password: hashPassword,
         };
         const user = new UserModel(postData);
         user.save()
@@ -33,6 +48,7 @@ class UserController {
                 res.json(reason);
             });
     }
+
     login(req: express.Request, res: express.Response) {
         const postData = {
             email: req.body.email,
@@ -67,7 +83,6 @@ class UserController {
                     message: "Incorrect password or email",
                 });
             }
-
         });
     }
 

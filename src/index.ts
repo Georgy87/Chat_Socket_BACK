@@ -1,5 +1,8 @@
 import dotenv from 'dotenv';
-dotenv.config();
+const express = require("express");
+const mongoose = require("mongoose");
+const app = express();
+const config = require("config");
 import { UserCtrl } from "./controllers/UserController";
 import { DialogCtrl } from "./controllers/DialogController";
 
@@ -7,16 +10,14 @@ import bodyParser from "body-parser";
 import { MessageCtrl } from "./controllers/MessageController";
 import { lastSeenMiddleware } from "./middlewares/updateLastSeen";
 import { default as loginValidation } from "./utils/validations/login";
+import { default as checkAuth } from './middlewares/checkAuth';
 
-const express = require("express");
-
-const mongoose = require("mongoose");
-const app = express();
-const config = require("config");
+dotenv.config();
 
 const PORT = config.get("serverPort");
 
 app.use(bodyParser.json());
+
 
 mongoose.connect(config.get("dbUrl"), {
     useNewUrlParser: true,
@@ -28,6 +29,9 @@ app.listen(PORT, () => {
     console.log(`App listening on port ${PORT}!`);
 });
 
+app.use(checkAuth);
+
+app.get("/user/me", UserCtrl.getMe);
 app.get("/user/:id", lastSeenMiddleware, UserCtrl.show);
 app.post("/user/registration", UserCtrl.create);
 app.post("/user/login", loginValidation, UserCtrl.login);
