@@ -1,60 +1,20 @@
-import dotenv from 'dotenv';
-const express = require("express");
-const mongoose = require("mongoose");
-const app = express();
-const config = require("config");
-import { UserCtrl } from "./controllers/UserController";
-import { DialogCtrl } from "./controllers/DialogController";
+import express from "express";
+import dotenv from "dotenv";
+import { createServer } from "http";
 
-import bodyParser from "body-parser";
-import { MessageCtrl } from "./controllers/MessageController";
-import { lastSeenMiddleware } from "./middlewares/updateLastSeen";
-import { default as loginValidation } from "./utils/validations/login";
-import { default as checkAuth } from './middlewares/checkAuth';
+import "./core/db";
+import createRoutes from "./core/routes";
+import createSocket from "./core/socket";
+
+const app = express();
+const http = createServer(app);
+const io = createSocket(http);
 
 dotenv.config();
 
-const PORT = config.get("serverPort");
+createRoutes(app, io);
 
-app.use(bodyParser.json());
-
-
-mongoose.connect(config.get("dbUrl"), {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useCreateIndex: true,
+http.listen(process.env.PORT, function() {
+  console.log(`Server: http://localhost:${process.env.PORT}`);
 });
 
-app.listen(PORT, () => {
-    console.log(`App listening on port ${PORT}!`);
-});
-
-app.use(checkAuth);
-
-app.get("/user/me", UserCtrl.getMe);
-app.get("/user/:id", lastSeenMiddleware, UserCtrl.show);
-app.post("/user/registration", UserCtrl.create);
-app.post("/user/login", loginValidation, UserCtrl.login);
-app.delete("/user/:id", UserCtrl.delete);
-
-app.get("/dialogs", DialogCtrl.show);
-app.post("/dialogs", DialogCtrl.create);
-app.delete("/dialogs", DialogCtrl.delete);
-
-app.get("/messages", MessageCtrl.show);
-app.post("/messages", MessageCtrl.create);
-app.delete("/messages", MessageCtrl.delete);
-
-app.use(lastSeenMiddleware);
-
-// app.get("/", function(req: any, res: any) {
-//     res.json({
-//         data: "User created",
-//     });
-//     const user = new User({
-//         email: "goshana87@mail.ru",
-//         fullname: "Test user",
-//         password: "1987toyuiui",
-//     });
-//     user.save().then((data) => console.log("Create user"));
-// });

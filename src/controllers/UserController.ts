@@ -4,9 +4,15 @@ import { IUser } from "../models/User";
 import { validationResult } from "express-validator";
 import { default as createJWToken } from "../utils/createJWToken";
 import bcrypt from "bcrypt";
+import socket from "socket.io";
 class UserController {
+    io: socket.Server;
+
+    constructor(io: socket.Server) {
+        this.io = io;
+    }
+
     show(req: express.Request, res: express.Response) {
-        console.log("fuck");
         const id: string = req.params.id;
         UserModel.findById(id, (err: any, user: any) => {
             if (err) {
@@ -20,7 +26,6 @@ class UserController {
 
     getMe(req: any, res: any) {
         const id: string = req.user._id;
-        console.log(req.user);
         UserModel.findById(id, (err: any, user: any) => {
             if (err) {
                 return res.status(404).json({
@@ -108,4 +113,4 @@ class UserController {
     }
 }
 
-export const UserCtrl = new UserController();
+export default UserController;

@@ -1,8 +1,13 @@
 import express from "express";
 import { DialogModel } from "../models/Dialog";
 import MessageModel from "../models/Message";
-
+import socket from "socket.io";
 class MessageController {
+    io: socket.Server;
+
+    constructor(io: socket.Server) {
+        this.io = io;
+    }
     show(req: express.Request, res: express.Response) {
         const dialogId = req.query.dialog;
         MessageModel.find({ dialog: dialogId })
@@ -54,4 +59,4 @@ class MessageController {
     }
 }
 
-export const MessageCtrl = new MessageController();
+export default MessageController;
