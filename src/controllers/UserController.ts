@@ -80,12 +80,44 @@ class UserController {
             });
     }
 
+    verify = (req: express.Request, res: express.Response): void => {
+        const hash: any = req.query.hash;
+        console.log('hello');
+
+        if (!hash) {
+            res.status(422).json({ errors: "Invalid hash" });
+        } else {
+            UserModel.findOne({ confirm_hash: hash }, (err: any, user: IUser) => {
+                if (err || !user) {
+                    return res.status(404).json({
+                        status: "error",
+                        message: "Hash not found",
+                    });
+                }
+
+                user.confirmed = true;
+                user.save((err: any) => {
+                    if (err) {
+                        return res.status(404).json({
+                            status: "error",
+                            message: err,
+                        });
+                    }
+
+                    res.json({
+                        status: "success",
+                        message: "Аккаунт успешно подтвержден!",
+                    });
+                });
+            });
+        }
+    };
+
     login(req: express.Request, res: express.Response) {
         const postData = {
             email: req.body.email,
             password: req.body.password,
         };
-        console.log(postData);
 
         const errors = validationResult(req);
 
