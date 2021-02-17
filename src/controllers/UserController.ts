@@ -5,6 +5,8 @@ import { validationResult } from "express-validator";
 import { default as createJWToken } from "../utils/createJWToken";
 import bcrypt from "bcrypt";
 import socket from "socket.io";
+import { mailer } from "../core/mailer";
+import { SentMessageInfo } from "nodemailer/lib/smtp-connection";
 class UserController {
     io: socket.Server;
 
@@ -15,7 +17,7 @@ class UserController {
     show(req: express.Request, res: express.Response) {
         const id: string = req.params.id;
         UserModel.findById(id, (err: any, user: any) => {
-            if (err) {
+            if (err || !user) {
                 return res.status(404).json({
                     message: "User not found",
                 });
@@ -45,9 +47,33 @@ class UserController {
             password: hashPassword,
         };
         const user = new UserModel(postData);
+
+        user.confirm_hash = await bcrypt.hash(new Date().toString(), 8);
+
+        const errors = validationResult(req);
+
+        if (!errors.isEmpty()) {
+            return res.status(422).json({ errors: errors.array() });
+        }
+
         user.save()
             .then((obj: any) => {
                 res.json(obj);
+                mailer.sendMail(
+                    {
+                        from: "admin@test.com",
+                        to: postData.email,
+                        subject: "Подтверждение почты React Chat Tutorial",
+                        html: `Для того, чтобы подтвердить почту, перейдите <a href="http://localhost:3000/signup/verify?hash=${obj.confirm_hash}">по этой ссылке</a>`,
+                    },
+                    function (err: Error | null, info: SentMessageInfo) {
+                        if (err) {
+                            console.log(err);
+                        } else {
+                            console.log(info);
+                        }
+                    }
+                );
             })
             .catch((reason) => {
                 res.json(reason);
@@ -59,6 +85,7 @@ class UserController {
             email: req.body.email,
             password: req.body.password,
         };
+        console.log(postData);
 
         const errors = validationResult(req);
 
@@ -66,7 +93,7 @@ class UserController {
             return res.status(422).json({ errors: errors.array() });
         }
 
-        UserModel.findOne({ email: postData.email }).exec(function(
+        UserModel.findOne({ email: postData.email }).exec(function (
             err: any,
             user: any
         ) {

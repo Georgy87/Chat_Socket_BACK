@@ -12,7 +12,7 @@ export default (http: http.Server) => {
 
     io.on("connection", function(socket: socket.Socket) {
         console.log("Connected");
-        socket.emit("109", "Привет!!");
+        // socket.emit("109", "Привет!!");
         socket.on("444", function(msg) {
             console.log(msg);
         });
