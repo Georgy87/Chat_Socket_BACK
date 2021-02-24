@@ -7,13 +7,20 @@ class DialogController {
     io: socket.Server;
 
     constructor(io: socket.Server) {
-      this.io = io;
+        this.io = io;
     }
     show(req: any, res: express.Response) {
-        const authorId = req.user._id;
-        console.log(authorId);
-        DialogModel.find({ author: authorId })
-            .populate(["author", "partner"])
+        const userId = req.user._id;
+
+        DialogModel.find()
+            .or([{ author: userId }, { partner: userId }])
+            .populate(['author', 'partner'])
+            .populate({
+                path: 'lastMessage',
+                populate: {
+                    path: 'user',
+                },
+            })
             .exec((err, dialogs) => {
 
                 if (err) {

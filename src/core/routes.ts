@@ -17,8 +17,8 @@ const createRoutes = (app: express.Express, io: socket.Server) => {
     const MessageCtrl = new MessageController(io);
 
     app.use(bodyParser.json());
-    app.use(lastSeenMiddleware);
     app.use(checkAuth);
+    app.use(lastSeenMiddleware);
 
     app.get("/user/me", UserCtrl.getMe);
     // app.get("/user/:id", UserCtrl.show);

@@ -27,7 +27,9 @@ class UserController {
     }
 
     getMe(req: any, res: any) {
+
         const id: string = req.user._id;
+        
         UserModel.findById(id, (err: any, user: any) => {
             if (err) {
                 return res.status(404).json({
@@ -82,7 +84,6 @@ class UserController {
 
     verify = (req: express.Request, res: express.Response): void => {
         const hash: any = req.query.hash;
-        console.log('hello');
 
         if (!hash) {
             res.status(422).json({ errors: "Invalid hash" });

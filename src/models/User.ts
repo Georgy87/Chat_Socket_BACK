@@ -1,5 +1,8 @@
 import { Schema, model, Document } from "mongoose";
 // import {isEmail} from "validator";
+
+import { differenceInMinutes, parseISO } from "date-fns";
+
 export interface IUser extends Document {
     email: string;
     fullname: string;
@@ -41,6 +44,17 @@ const UserSchema = new Schema(
         timestamps: true,
     }
 );
+
+UserSchema.virtual("isOnline").get(function (this: any) {
+    console.log(parseISO(new Date().toISOString()));
+    console.log(this.last_seen);
+
+    return differenceInMinutes(parseISO(new Date().toISOString()), this.last_seen) < 5;
+});
+
+UserSchema.set("toJSON", {
+    virtuals: true
+  });
 
 const UserModel = model<IUser>("User", UserSchema);
 
