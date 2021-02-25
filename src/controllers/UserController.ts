@@ -29,7 +29,7 @@ class UserController {
     getMe(req: any, res: any) {
 
         const id: string = req.user._id;
-        
+
         UserModel.findById(id, (err: any, user: any) => {
             if (err) {
                 return res.status(404).json({
@@ -43,12 +43,11 @@ class UserController {
     async create(req: express.Request, res: express.Response) {
         const hashPassword = await bcrypt.hash(req.body.password, 8);
 
-        const postData = {
+        const user = new UserModel({
             email: req.body.email,
             fullname: req.body.fullname,
             password: hashPassword,
-        };
-        const user = new UserModel(postData);
+        });
 
         user.confirm_hash = await bcrypt.hash(new Date().toString(), 8);
 
@@ -64,7 +63,7 @@ class UserController {
                 mailer.sendMail(
                     {
                         from: "admin@test.com",
-                        to: postData.email,
+                        to: req.body.email,
                         subject: "Подтверждение почты React Chat Tutorial",
                         html: `Для того, чтобы подтвердить почту, перейдите <a href="http://localhost:3000/signup/verify?hash=${obj.confirm_hash}">по этой ссылке</a>`,
                     },
@@ -114,7 +113,7 @@ class UserController {
         }
     };
 
-    login(req: express.Request, res: express.Response) {
+    login(req: any, res: express.Response) {
         const postData = {
             email: req.body.email,
             password: req.body.password,
@@ -135,8 +134,9 @@ class UserController {
                     message: "User not found",
                 });
             }
-
+            console.log(user);
             if (bcrypt.compareSync(postData.password, user.password)) {
+
                 const token = createJWToken(user);
                 res.json({
                     status: "success",
