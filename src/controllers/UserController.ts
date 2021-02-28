@@ -129,12 +129,13 @@ class UserController {
             err: any,
             user: any
         ) {
+
             if (err) {
                 return res.status(404).json({
                     message: "User not found",
                 });
             }
-            console.log(user);
+
             if (bcrypt.compareSync(postData.password, user.password)) {
 
                 const token = createJWToken(user);
@@ -150,6 +151,22 @@ class UserController {
             }
         });
     }
+
+    findUsers = (req: any, res: express.Response) => {
+        const query: string = req.query.query;
+        UserModel.find()
+            .or([
+                { fullname: new RegExp(query, "i") },
+                { email: new RegExp(query, "i") }
+            ])
+            .then((users: any) => res.json(users))
+            .catch((err: any) => {
+                return res.status(404).json({
+                    status: "error",
+                    message: err
+                });
+            });
+    };
 
     delete(req: express.Request, res: express.Response) {
         const id = req.params.id;
