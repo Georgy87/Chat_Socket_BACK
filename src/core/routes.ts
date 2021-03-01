@@ -34,7 +34,7 @@ const createRoutes = (app: express.Express, io: socket.Server) => {
 
     app.get("/messages", MessageCtrl.show);
     app.post("/messages", MessageCtrl.create);
-    app.delete("/messages/:id", MessageCtrl.delete);
+    app.delete("/messages?:id", MessageCtrl.delete);
 };
 
 export default createRoutes;

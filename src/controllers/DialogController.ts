@@ -33,6 +33,7 @@ class DialogController {
     }
 
     create = (req: any, res: express.Response) => {
+        // const arr = ["6037c1464206fc81bbce8161", "602ad55a9725bfd6334b398a"]
         const postData = {
             author: req.user._id,
             partner: req.body.partner
@@ -72,6 +73,7 @@ class DialogController {
 
     delete(req: express.Request, res: express.Response) {
         const id = req.params.id;
+      
         DialogModel.findOneAndRemove({ _id: id })
             .then((dialog: IDialog | null) => {
                 if (dialog) {

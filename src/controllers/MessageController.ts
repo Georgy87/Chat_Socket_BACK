@@ -8,6 +8,7 @@ class MessageController {
     constructor(io: socket.Server) {
         this.io = io;
     }
+
     show = (req: express.Request, res: express.Response) => {
         const dialogId = req.query.dialog;
         MessageModel.find({ dialog: dialogId })
@@ -21,6 +22,7 @@ class MessageController {
                 return res.json(messages);
             });
     }
+
     create = (req: any, res: express.Response) => {
         const userId = req.user._id;
 
@@ -45,13 +47,13 @@ class MessageController {
                         { _id: postData.dialog },
                         { lastMessage: message._id },
                         { upsert: true },
-                        function(err) {
-                          if (err) {
-                            return res.status(500).json({
-                              status: "error",
-                              message: err
-                            });
-                          }
+                        function (err) {
+                            if (err) {
+                                return res.status(500).json({
+                                    status: "error",
+                                    message: err
+                                });
+                            }
                         }
                     );
                     res.json(message);
@@ -62,22 +64,63 @@ class MessageController {
                 res.json(reason);
             });
     }
-    delete = (req: express.Request, res: express.Response) => {
-        const id = req.query.id;
-        MessageModel.findOneAndDelete({ _id: id })
-            .then((message) => {
-                if (message) {
-                    res.json({
-                        message: `Message deleted`,
-                    });
-                }
-            })
-            .catch(() => {
-                res.json({
-                    message: `Message not found`,
+
+    delete = (req: any, res: express.Response): void => {
+        const id: string = req.query.id;
+        const userId: string = req.user._id;
+
+        MessageModel.findById(id, (err: any, message: any) => {
+            if (err || !message) {
+                return res.status(404).json({
+                    status: "error",
+                    message: "Message not found",
                 });
-            });
+            }
+
+            if (message.user.toString() === userId) {
+                const dialogId = message.dialog;
+                message.remove();
+
+                MessageModel.findOne({ dialog: dialogId }).sort({ createdAt: -1 })
+                    .exec((err: any, lastMessage: any) => {
+                        if (err) {
+                            res.status(500).json({
+                                status: "error",
+                                message: err,
+                            });
+                        }
+
+                        DialogModel.findById(dialogId, (err: any, dialog: any) => {
+                            if (err) {
+                                res.status(500).json({
+                                    status: "error",
+                                    message: err,
+                                });
+                            }
+
+                            if (!dialog) {
+                                return res.status(404).json({
+                                    status: "not found",
+                                    message: err,
+                                });
+                            }
+
+                            dialog.lastMessage = lastMessage._id.toString();
+                            dialog.save();
+                            this.io.emit("SERVER:DIALOG_CREATED");
+                        });
+                    });
+                    return res.json({
+                        status: "success",
+                        message: "Message deleted",
+                      });
+            } else {
+                return res.status(403).json({
+                    status: "error",
+                    message: "Not have permission",
+                });
+            }
+        });
     }
 }
-
 export default MessageController;
