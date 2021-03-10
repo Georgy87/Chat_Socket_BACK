@@ -3,7 +3,7 @@ import { UserModel } from "../models";
 import { IUser } from "../models/User";
 import { validationResult } from "express-validator";
 import { default as createJWToken } from "../utils/createJWToken";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";
 import socket from "socket.io";
 import { mailer } from "../core/mailer";
 import { SentMessageInfo } from "nodemailer/lib/smtp-connection";
@@ -14,8 +14,9 @@ class UserController {
         this.io = io;
     }
 
-    show(req: express.Request, res: express.Response) {
+    show(req: any, res: express.Response) {
         const id: string = req.params.id;
+
         UserModel.findById(id, (err: any, user: any) => {
             if (err || !user) {
                 return res.status(404).json({
@@ -40,7 +41,7 @@ class UserController {
         });
     }
 
-    async create(req: express.Request, res: express.Response) {
+    async create(req: any, res: express.Response) {
         const hashPassword = await bcrypt.hash(req.body.password, 8);
 
         const user = new UserModel({
@@ -56,10 +57,8 @@ class UserController {
         if (!errors.isEmpty()) {
             return res.status(422).json({ errors: errors.array() });
         }
-
         user.save()
             .then((obj: any) => {
-                res.json(obj);
                 mailer.sendMail(
                     {
                         from: "admin@test.com",
@@ -71,17 +70,21 @@ class UserController {
                         if (err) {
                             console.log(err);
                         } else {
+                            res.json({
+                                status: "success"
+                            });
                             console.log(info);
                         }
                     }
                 );
+
             })
             .catch((reason) => {
                 res.json(reason);
             });
     }
 
-    verify = (req: express.Request, res: express.Response): void => {
+    verify = (req: any, res: express.Response): void => {
         const hash: any = req.query.hash;
 
         if (!hash) {
@@ -139,9 +142,12 @@ class UserController {
             if (bcrypt.compareSync(postData.password, user.password)) {
 
                 const token = createJWToken(user);
+
                 res.json({
                     status: "success",
-                    token,
+                    user,
+                    token
+
                 });
             } else {
                 res.json({
