@@ -9,8 +9,39 @@ class MessageController {
         this.io = io;
     }
 
-    show = (req: express.Request, res: express.Response) => {
+    updateReadStatus = (
+        res: express.Response,
+        userId: string,
+        dialogId: string
+    ) => {
+
+     
+        MessageModel.updateMany(
+            { dialog: dialogId, user: { $ne: userId } },
+            { $set: { read: true }},
+            //@ts-ignore
+            (err: any) => {
+                if (err) {
+                    res.status(500).json({
+                        status: "error",
+                        message: err,
+                    });
+                } else {
+                    this.io.emit("SERVER:MESSAGES_READED", {
+                        userId,
+                        dialogId,
+                    });
+                }
+            }
+        );
+    };
+
+    show = (req: any, res: express.Response) => {
         const dialogId = req.query.dialog;
+        const userId: string = req.user._id;
+
+        this.updateReadStatus(res, userId, dialogId);
+
         MessageModel.find({ dialog: dialogId })
             .populate(["dialog", "user"])
             .exec((err, messages) => {
@@ -33,6 +64,8 @@ class MessageController {
         };
 
         const message = new MessageModel(postData);
+
+        this.updateReadStatus(res, userId, req.body.dialog_id);
 
         message
             .save()
@@ -110,10 +143,10 @@ class MessageController {
                             this.io.emit("SERVER:DIALOG_CREATED");
                         });
                     });
-                    return res.json({
-                        status: "success",
-                        message: "Message deleted",
-                      });
+                return res.json({
+                    status: "success",
+                    message: "Message deleted",
+                });
             } else {
                 return res.status(403).json({
                     status: "error",

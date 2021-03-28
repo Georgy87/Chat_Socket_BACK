@@ -9,6 +9,7 @@ class DialogController {
     constructor(io: socket.Server) {
         this.io = io;
     }
+
     show(req: any, res: express.Response) {
         const userId = req.user._id;
 
@@ -28,19 +29,82 @@ class DialogController {
                         message: "Dialogs not found",
                     });
                 }
+
                 return res.json(dialogs);
             });
     }
 
+    // getDialogById(req: any, res: express.Response) {
+    //     const dialogId = req.query.dialogId;
+
+    //     if (dialogId) {
+    //         DialogModel.findOne({ _id: dialogId})
+    //             .exec((err, dialogs) => {
+
+    //                 if (err) {
+    //                     res.status(404).json({
+    //                         message: "Dialogs not found",
+    //                     });
+    //                 }
+
+    //                 return res.json({
+    //                     status: 'success',
+    //                     dialogName: dialogs?.dialogName
+    //                 });
+    //             });
+    //     }
+    // }
+
+
     create = (req: any, res: express.Response) => {
+        const isOnePartnerOrGroup = "IS_ONE_PARTNER";
+        const postData = {
+            author: req.user._id,
+            partner: req.body.partner,
+            isOnePartnerOrGroup
+        };
+
+        const dialog = new DialogModel(postData);
+
+        dialog
+            .save()
+            .then((dialogObj: any) => {
+                const message = new MessageModel({
+                    text: req.body.text,
+                    user: req.user._id,
+                    dialog: dialogObj._id
+                });
+
+                message
+                    .save()
+                    .then(() => {
+                        dialogObj.lastMessage = message._id;
+                        dialogObj.save().then(() => {
+                            res.json(dialogObj);
+                            this.io.emit("SERVER:DIALOG_CREATED", {
+                                ...postData,
+                                dialog: dialogObj
+                            });
+                        });
+                    })
+                    .catch(reason => {
+                        res.json(reason);
+                    });
+            });
+
+    }
+
+    createGroup = (req: any, res: express.Response) => {
         // const arr = ["6043b8c2ba55502c6739d8fb", "6040f4bc1f99a7b5992d882c", "602ad55a9725bfd6334b398a"]
         const textForCreateGroup = "Группа созданна";
+        const isOnePartnerOrGroup = "IS_GROUP";
 
         if (req.body.groupName) {
             const groupData = {
                 author: req.user._id,
                 partner: ["6043b8c2ba55502c6739d8fb", "6040f4bc1f99a7b5992d882c", "602ad55a9725bfd6334b398a", "6037c1464206fc81bbce8161"],
-                groupName: req.body.groupName
+                dialogName: req.body.groupName,
+                isOnePartnerOrGroup
             };
 
             const dialogGroup = new DialogModel(groupData);
@@ -70,40 +134,6 @@ class DialogController {
                             res.json(reason);
                         });
                 })
-        } else {
-            const postData = {
-                author: req.user._id,
-                partner: req.body.partner,
-            };
-
-            const dialog = new DialogModel(postData);
-
-            dialog
-                .save()
-                .then((dialogObj: any) => {
-                    const message = new MessageModel({
-                        text: req.body.text,
-                        user: req.user._id,
-                        dialog: dialogObj._id
-                    });
-
-                    message
-                        .save()
-                        .then(() => {
-                            dialogObj.lastMessage = message._id;
-                            dialogObj.save().then(() => {
-                                res.json(dialogObj);
-                                this.io.emit("SERVER:DIALOG_CREATED", {
-                                    ...postData,
-                                    dialog: dialogObj
-                                });
-                            });
-                        })
-                        .catch(reason => {
-                            res.json(reason);
-                        });
-                });
-
         }
     }
 

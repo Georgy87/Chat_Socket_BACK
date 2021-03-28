@@ -12,6 +12,8 @@ export interface IDialog extends Document {
     //     require: true;
     // };
     author: any;
+    groupName: string;
+    isOnePartnerOrGroup: string;
     messages: [
         {
             type: Schema.Types.ObjectId;
@@ -25,7 +27,8 @@ const DialogSchema = new Schema(
         partner: [{ type: Schema.Types.ObjectId, ref: "User" }],
         // partner: { type: Schema.Types.ObjectId, ref: "User" },
         author: { type: Schema.Types.ObjectId, ref: "User" },
-        groupName: { type: String},
+        dialogName: { type: String},
+        isOnePartnerOrGroup: { type: String },
         lastMessage: { type: Schema.Types.ObjectId, ref: "Message" },
     },
     {

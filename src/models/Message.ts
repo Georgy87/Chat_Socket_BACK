@@ -11,7 +11,7 @@ export interface IMessage extends Document {
     //     require: true;
     // };
     dialog: any;
-    unread: {
+    readed: {
         type: boolean;
         default: false;
     };
@@ -24,7 +24,7 @@ const MessageSchema = new Schema(
         text: { type: String, require: Boolean },
         dialog: { type: Schema.Types.ObjectId, ref: "Dialog", require: true },
         user: { type: Schema.Types.ObjectId, ref: "User", require: true },
-        unread: {
+        read: {
             type: Boolean,
             default: false,
         },

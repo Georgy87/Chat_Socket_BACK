@@ -31,6 +31,7 @@ const createRoutes = (app: express.Express, io: socket.Server) => {
     app.get("/dialogs", DialogCtrl.show);
     app.delete("/dialogs/:id",  DialogCtrl.delete);
     app.post("/dialogs",  DialogCtrl.create);
+    app.post("/dialogs/group", DialogCtrl.createGroup);
 
     app.get("/messages", MessageCtrl.show);
     app.post("/messages", MessageCtrl.create);

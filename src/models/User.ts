@@ -52,7 +52,7 @@ UserSchema.virtual("isOnline").get(function (this: any) {
 
 UserSchema.set("toJSON", {
     virtuals: true
-  });
+});
 
 const UserModel = model<IUser>("User", UserSchema);
 
