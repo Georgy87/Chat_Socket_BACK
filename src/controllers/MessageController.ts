@@ -14,8 +14,6 @@ class MessageController {
         userId: string,
         dialogId: string
     ) => {
-
-     
         MessageModel.updateMany(
             { dialog: dialogId, user: { $ne: userId } },
             { $set: { read: true }},
@@ -39,8 +37,9 @@ class MessageController {
     show = (req: any, res: express.Response) => {
         const dialogId = req.query.dialog;
         const userId: string = req.user._id;
-
-        this.updateReadStatus(res, userId, dialogId);
+        if (req.query) {
+            this.updateReadStatus(res, userId, dialogId);
+        }
 
         MessageModel.find({ dialog: dialogId })
             .populate(["dialog", "user"])

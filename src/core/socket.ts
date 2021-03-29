@@ -1,6 +1,6 @@
 import socket from "socket.io";
 import http from "http";
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 
 export default (http: http.Server) => {
     const io = new Server(http, {

@@ -1,4 +1,4 @@
-import express from "express";
+// import express from "express";
 import { default as verifyJWTToken } from "../utils/verifyJWTToken";
 
 export default (req: any, res: any, next: any) => {
@@ -13,7 +13,7 @@ export default (req: any, res: any, next: any) => {
             req.user = user.data._doc;
             next();
         })
-        .catch((err) => {
+        .catch(() => {
             res.status(403).json({ message: "Invalid auth token provided." });
         });
 };
